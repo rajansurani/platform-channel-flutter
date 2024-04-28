@@ -4,6 +4,7 @@ import AVFoundation
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
+    //Channel Name
     private let CHANNEL = "live.videosdk.flutter.example/image_capture"
     private var result: FlutterResult?
     private var captureSession: AVCaptureSession?
@@ -18,6 +19,7 @@ import AVFoundation
         let channel = FlutterMethodChannel(name: CHANNEL, binaryMessenger: controller.binaryMessenger)
         channel.setMethodCallHandler({
             (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+            //Handling the methods when the callback is invoked
             if call.method == "captureImage" {
                 self.result = result
                 self.captureImage()
@@ -46,6 +48,7 @@ import AVFoundation
         }
     }
 
+    // Mehtod which will capture the image
     private func captureImage() {
         captureSession = AVCaptureSession()
 

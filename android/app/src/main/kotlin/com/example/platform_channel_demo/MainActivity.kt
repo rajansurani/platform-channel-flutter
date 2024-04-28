@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
+    // Channel name
     private val CHANNEL_NAME = "live.videosdk.flutter.example/image_capture"
     private val REQUEST_CODE_PERMISSIONS = 10
     private val REQUIRED_PERMISSIONS =
@@ -35,6 +36,8 @@ class MainActivity : FlutterActivity() {
         }
 
         channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_NAME)
+
+        // Handle method channel callbacks
         channel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "captureImage" -> takePhoto(result)
