@@ -25,10 +25,10 @@ import AVFoundation
                 self.requestCameraPermission { granted in
                     if granted {
                         print("Camera permission granted")
-                        // Continue with camera-related functionality
+                        channel.invokeMethod("permissonGranted", arguments: true)
                     } else {
                         print("Camera permission denied")
-                        // Handle case where camera permission is denied
+                        channel.invokeMethod("permissonGranted", arguments: false)
                     }
                 }
             } else {

@@ -34,10 +34,26 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  static const MethodChannel _channel =
+  static const MethodChannel channel =
       MethodChannel('live.videosdk.flutter.example/image_capture');
 
   String? base64Image;
+  bool permissionGranted = false;
+  @override
+  void initState() {
+    super.initState();
+    channel.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'permissonGranted':
+          setState(() {
+            permissionGranted = true;
+          });
+          return;
+        default:
+          throw MissingPluginException();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +66,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Text(
+                "Camera Permission Status: ${permissionGranted ? "Granted" : "Not granted"}"),
             if (base64Image != null)
               Image.memory(
                   height: 400, const Base64Decoder().convert(base64Image!)),
@@ -58,7 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 MaterialButton(
                   onPressed: () async {
-                    await _channel.invokeMethod('requestPermission');
+                    await channel.invokeMethod('requestPermission');
                   },
                   child: Container(
                       padding: const EdgeInsets.all(10),
@@ -74,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 MaterialButton(
                   onPressed: () async {
                     final String? image =
-                        await _channel.invokeMethod('captureImage');
+                        await channel.invokeMethod('captureImage');
                     print("image $image");
                     setState(() {
                       base64Image = image;

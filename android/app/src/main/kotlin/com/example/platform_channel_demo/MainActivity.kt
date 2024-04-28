@@ -19,12 +19,13 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "live.videosdk.flutter.example/image_capture"
+    private val CHANNEL_NAME = "live.videosdk.flutter.example/image_capture"
     private val REQUEST_CODE_PERMISSIONS = 10
     private val REQUIRED_PERMISSIONS =
             arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var imageCapture: ImageCapture
+    private lateinit var channel: MethodChannel
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -33,23 +34,22 @@ class MainActivity : FlutterActivity() {
             startCamera()
         }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
-                call,
-                result ->
-            if (call.method == "captureImage") {
-                takePhoto(result)
-            } else if (call.method == "requestPermission") {
-                if (allPermissionsGranted()) {
-                    startCamera()
-                } else {
-                    ActivityCompat.requestPermissions(
-                            this,
-                            REQUIRED_PERMISSIONS,
-                            REQUEST_CODE_PERMISSIONS
-                    )
+        channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_NAME)
+        channel.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "captureImage" -> takePhoto(result)
+                "requestPermission" -> {
+                    if (allPermissionsGranted()) {
+                        startCamera()
+                    } else {
+                        ActivityCompat.requestPermissions(
+                                this,
+                                REQUIRED_PERMISSIONS,
+                                REQUEST_CODE_PERMISSIONS
+                        )
+                    }
                 }
-            } else {
-                result.notImplemented()
+                else -> result.notImplemented()
             }
         }
     }
@@ -67,6 +67,7 @@ class MainActivity : FlutterActivity() {
                 return false
             }
         }
+        channel.invokeMethod("permissonGranted", true)
         return true
     }
 
@@ -84,6 +85,7 @@ class MainActivity : FlutterActivity() {
                 Toast.makeText(this@MainActivity, "Camera Permission Granted", Toast.LENGTH_SHORT)
                         .show()
                 startCamera()
+                channel.invokeMethod("permissonGranted", true)
             } else {
                 Toast.makeText(this@MainActivity, "Camera Permission Denied", Toast.LENGTH_SHORT)
                         .show()
